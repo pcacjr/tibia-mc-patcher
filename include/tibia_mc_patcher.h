@@ -71,7 +71,7 @@
 		if ((offs) >						\
 		    (TIBIA_RODATA_SECTION_OFFS + TIBIA_RODATA_SECTION_SIZE)) { \
 			fprintf(stderr,					\
-				".text section - VMA to file offset "	\
+				".rodata section - VMA to file offset "	\
 				"failed\n");				\
 			(offs) = 0;					\
 		}							\
