@@ -26,6 +26,8 @@
 
 #include "tibia_mc_patcher.h"
 
+#define PROGRAM_VERSION "0.1"
+
 static struct option long_options[] = {
 	{ "path",         required_argument, 0, 'p' },
 	{ "help",         no_argument,       0, 'h' },
@@ -33,11 +35,33 @@ static struct option long_options[] = {
 	{ 0, 0, 0, 0 },
 };
 
+static inline void print_help(void)
+{
+	printf(
+		"Tibia Multi-client patcher for Linux version %s, Copyright (c) 2013 Paulo Alcantara\n"
+		"usage: tibia_mc_patcher [options] [tibia_client]\n\n"
+		"Standard options:\n"
+		"-h or --help     display this help and exit\n"
+		"-version         display version information and exit\n"
+		"-p or --path     path to Tibia Linux client\n",
+		PROGRAM_VERSION);
+	exit(EXIT_SUCCESS);
+}
+
+static inline void print_version(void)
+{
+	printf(
+		"Tibia Multi-client patcher for Linux, Copyright (c) 2013 Paulo Alcantara\n"
+		"version: %s\n", PROGRAM_VERSION);
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
 	int option_index = 0;
 	int c;
 	const char *path;
+	int retval;
 
 	for (;;) {
 		c = getopt_long(argc, argv, "p:hv", long_options,
@@ -50,10 +74,10 @@ int main(int argc, char **argv)
 			path = optarg;
 			break;
 		case 'h':
-			printf("TODO: Print program help\n");
+			print_help();
 			break;
 		case 'v':
-			printf("TODO: Print program version\n");
+			print_version();
 			break;
 		default:
 			printf("Weird - returned character code 0%o ??\n", c);
@@ -61,8 +85,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (path && *path)
-		tibia_mc_patch_do_apply(path);
+	if (!path || (path && !*path))
+		print_help();
+
+	retval = tibia_mc_patch_do_apply(path);
+	if (retval)
+		goto error;
 
 	return 0;
 
