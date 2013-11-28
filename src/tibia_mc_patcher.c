@@ -60,14 +60,17 @@ static int do_sanity_checks(u8 *map)
 	/* Check if "TIBIARUNNING" string is in the vma we expect */
 	TIBIA_RODATA_VMA_TO_FILE_OFFS(TIBIA_X_ATOM_NAME_VMA, offs);
 	if (offs) {
+#if 0
 		printf("vma 0x%lx to file offset 0x%lx\n",
 		       TIBIA_X_ATOM_NAME_VMA, (unsigned long)offs);
-
+#endif
 		p = map + offs;
-		if (strcmp((const char *)p, TIBIA_X_ATOM_NAME_STR))
+		if (strcmp((const char *)p, TIBIA_X_ATOM_NAME_STR)) {
+			fprintf(stderr, "Sanity checks failed. :-(\n");
 			ok = -1; /* No, it isn't. :-( */
-		else
+		} else {
 			ok = 0; /* Good. :-) */
+		}
 	}
 
 	/* TODO: add more checks */
@@ -86,8 +89,17 @@ static int apply_mc_patch(u8 *map)
 	 */
 	TIBIA_TEXT_VMA_TO_FILE_OFFS(TIBIA_X_PATCH_AREA_VMA, offs);
 	if (offs) {
-		memcpy(map + offs, &mc_patch_code, MC_PATCH_CODE_SIZE);
+		if (!memcmp(map + offs, &mc_patch_code, MC_PATCH_CODE_SIZE)) {
+			printf("Patch has already been applied into this "
+			       "client. Nothing to do.\n");
+		} else {
+			memcpy(map + offs, &mc_patch_code, MC_PATCH_CODE_SIZE);
+			printf("Patch has been applied successfully!\n");
+		}
+
 		ok = 0;
+	} else {
+		fprintf(stderr, "Patch has NOT been applied. :-(\n");
 	}
 
 	return ok;
@@ -120,20 +132,12 @@ int tibia_mc_patch_do_apply(const char *path)
 	}
 
 	retval = do_sanity_checks(map);
-	if (retval < 0) {
-		fprintf(stderr, "Sanity checks failed\n");
+	if (retval < 0)
 		goto sanity_checks_failed;
-	}
-
-	printf("Cool - sanity check(s) passed OK!\n");
 
 	retval = apply_mc_patch(map);
-	if (retval < 0) {
-		fprintf(stderr, "Failed to apply MC patch. Sorry :-(\n");
+	if (retval < 0)
 		goto patch_failed;
-	}
-
-	printf("Patch has been applied successfully!\n");
 
 	munmap(map, sb.st_size);
 	close(fd);
