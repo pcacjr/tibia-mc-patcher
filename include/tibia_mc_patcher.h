@@ -23,4 +23,60 @@
 #ifndef _TIBIA_MC_PATCHER_H
 #define _TIBIA_MC_PATCHER_H
 
+/* Note: All VMAs and strings were took from GDB while reverse engineering Tibia
+ * client.
+ */
+#define TIBIA_X_ATOM_NAME_STR         "TIBIARUNNING"
+#define TIBIA_X_ATOM_NAME_VMA         0x83c4e01ul
+#define TIBIA_X_PATCH_AREA_VMA        0x8332169ul
+
+/*
+ * Tibia's section headers:
+ *
+ * [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+ * ...
+ * ...
+ * [13] .text             PROGBITS        0804d5d0 0055d0 35e4ec 00  AX  0   0 16
+ * ...
+ * [15] .rodata           PROGBITS        083abae0 363ae0 021dbc 00   A  0   0 32
+ * ...
+ * ...
+ */
+
+#define TIBIA_TEXT_SECTION_VMA    0x804d5d0ul
+#define TIBIA_TEXT_SECTION_OFFS   0x0055d0ul
+#define TIBIA_TEXT_SECTION_SIZE   0x35e4ecul
+
+#define TIBIA_RODATA_SECTION_VMA  0x83abae0ul
+#define TIBIA_RODATA_SECTION_OFFS 0x363ae0ul
+#define TIBIA_RODATA_SECTION_SIZE 0x021dbcul
+
+#define TIBIA_TEXT_VMA_TO_FILE_OFFS(vma, offs)				\
+	do {								\
+		(offs) = (vma) - TIBIA_TEXT_SECTION_VMA +		\
+			TIBIA_TEXT_SECTION_OFFS;			\
+		if ((offs) >						\
+		    (TIBIA_TEXT_SECTION_OFFS + TIBIA_TEXT_SECTION_SIZE)) { \
+			fprintf(stderr,					\
+				".text section - VMA to file offset "	\
+				"failed\n");				\
+			(offs) = 0;					\
+		}							\
+	} while (0)
+
+#define TIBIA_RODATA_VMA_TO_FILE_OFFS(vma, offs)			\
+	do {								\
+		(offs) = (vma) - TIBIA_RODATA_SECTION_VMA +		\
+			TIBIA_RODATA_SECTION_OFFS;			\
+		if ((offs) >						\
+		    (TIBIA_RODATA_SECTION_OFFS + TIBIA_RODATA_SECTION_SIZE)) { \
+			fprintf(stderr,					\
+				".text section - VMA to file offset "	\
+				"failed\n");				\
+			(offs) = 0;					\
+		}							\
+	} while (0)
+
+extern int tibia_mc_patch_do_apply(const char *path);
+
 #endif /* _TIBIA_MC_PATCHER_H */
