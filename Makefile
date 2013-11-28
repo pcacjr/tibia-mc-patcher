@@ -21,7 +21,7 @@
 
 CC=gcc
 CFLAGS=-c -Wall -I./include
-SOURCES=src/main.c
+SOURCES=src/main.c src/tibia_mc_patcher.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=tibia_mc_patcher
 
